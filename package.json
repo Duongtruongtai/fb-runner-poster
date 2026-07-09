@@ -1,0 +1,14 @@
+{
+  "name": "fb-runner-poster",
+  "version": "1.0.0",
+  "description": "Auto content writer and scheduler for the Runner Com VN Facebook page",
+  "type": "module",
+  "scripts": {
+    "post": "node src/post-now.js",
+    "schedule": "node src/schedule.js",
+    "list": "node src/list-scheduled.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
