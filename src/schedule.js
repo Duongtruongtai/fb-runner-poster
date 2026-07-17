@@ -1,11 +1,11 @@
 import { schedulePost } from "./facebook.js";
 import { takeNextPosts } from "./content.js";
 
-// Golden hours for Vietnamese runner audience (Vietnam time, UTC+7)
+// Golden hours for Vietnamese crypto audience (Vietnam time, UTC+7)
 const GOLDEN_HOURS = [
-  { hour: 5, minute: 30 }, // early-morning runners checking feed before/after their run
-  { hour: 11, minute: 30 }, // lunch break scrolling
-  { hour: 20, minute: 0 }, // evening prime time
+  { hour: 7, minute: 0 }, // morning market check over coffee
+  { hour: 12, minute: 0 }, // lunch break scrolling
+  { hour: 21, minute: 0 }, // evening prime time, most active hours
 ];
 
 const VN_UTC_OFFSET_HOURS = 7;

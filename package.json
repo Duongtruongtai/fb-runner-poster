@@ -1,7 +1,7 @@
 {
-  "name": "fb-runner-poster",
-  "version": "1.0.0",
-  "description": "Auto content writer and scheduler for the Runner Com VN Facebook page",
+  "name": "fb-page-poster",
+  "version": "2.0.0",
+  "description": "Auto content writer and golden-hour scheduler for the Bien Dong Crypto Facebook page",
   "type": "module",
   "scripts": {
     "post": "node src/post-now.js",

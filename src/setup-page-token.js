@@ -7,11 +7,12 @@ import { fileURLToPath } from "url";
 
 const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const GRAPH_API = "https://graph.facebook.com/v21.0";
-const TARGET_PAGE_ID = "998644543336781";
+// Bien Dong Crypto page; override with the second CLI argument if needed
+const TARGET_PAGE_ID = process.argv[3] || "1141619055709724";
 
 const userToken = process.argv[2];
 if (!userToken) {
-  console.error("Usage: node src/setup-page-token.js <USER_ACCESS_TOKEN>");
+  console.error("Usage: node src/setup-page-token.js <USER_ACCESS_TOKEN> [PAGE_ID]");
   process.exit(1);
 }
 
