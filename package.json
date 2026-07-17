@@ -6,7 +6,8 @@
   "scripts": {
     "post": "node src/post-now.js",
     "schedule": "node src/schedule.js",
-    "list": "node src/list-scheduled.js"
+    "list": "node src/list-scheduled.js",
+    "web": "node src/server.js"
   },
   "engines": {
     "node": ">=18"

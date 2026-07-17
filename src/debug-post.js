@@ -1,6 +1,8 @@
 // Diagnostic: verifies the page token works for reads, then attempts a minimal
 // test post and prints the FULL error object from the Graph API.
-import { GRAPH_API, PAGE_ID, PAGE_ACCESS_TOKEN } from "./config.js";
+import { GRAPH_API, getEnv } from "./config.js";
+
+const { PAGE_ID, PAGE_ACCESS_TOKEN } = getEnv();
 
 const readRes = await fetch(
   `${GRAPH_API}/${PAGE_ID}?fields=id,name,is_published&access_token=${encodeURIComponent(PAGE_ACCESS_TOKEN)}`

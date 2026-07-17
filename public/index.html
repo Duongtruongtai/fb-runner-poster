@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Biển Đông Crypto — Quản lý đăng bài</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b26; --panel2: #1c2333; --border: #2a3245;
+    --text: #e6e9f0; --muted: #8b93a7; --accent: #f0b429; --accent2: #22d3ee;
+    --green: #34d399; --red: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  header { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; }
+  header h1 { font-size: 1.35rem; }
+  header h1 span { color: var(--accent); }
+  .badge { font-size: .78rem; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel); color: var(--muted); }
+  .badge.ok { color: var(--green); border-color: var(--green); }
+  .badge.bad { color: var(--red); border-color: var(--red); }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+  .tab { padding: 9px 18px; border-radius: 10px; background: var(--panel); border: 1px solid var(--border); color: var(--muted); cursor: pointer; font-size: .95rem; }
+  .tab.active { background: var(--accent); color: #14181f; font-weight: 700; border-color: var(--accent); }
+
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 16px; }
+  .panel h2 { font-size: 1.02rem; margin-bottom: 12px; color: var(--accent2); }
+
+  button { border: 0; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: .88rem; font-weight: 600; }
+  .btn-gold { background: var(--accent); color: #14181f; }
+  .btn-cyan { background: var(--accent2); color: #08222a; }
+  .btn-ghost { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+  .btn-red { background: transparent; color: var(--red); border: 1px solid var(--red); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+
+  input, textarea, select { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 9px 11px; font-size: .92rem; width: 100%; font-family: inherit; }
+  textarea { min-height: 130px; resize: vertical; line-height: 1.5; }
+  label { font-size: .82rem; color: var(--muted); display: block; margin: 10px 0 5px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+  .row > div { flex: 1; min-width: 130px; }
+
+  .sched-item, .post-card { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 13px 14px; margin-bottom: 10px; }
+  .sched-item { display: flex; gap: 12px; align-items: center; }
+  .sched-time { font-weight: 700; color: var(--accent); white-space: nowrap; font-size: .9rem; }
+  .sched-preview { flex: 1; color: var(--muted); font-size: .87rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .post-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .post-head .topic { background: rgba(240,180,41,.12); color: var(--accent); font-size: .75rem; padding: 3px 9px; border-radius: 999px; font-weight: 700; }
+  .post-head .pid { color: var(--muted); font-size: .78rem; }
+  .used-tag { font-size: .72rem; color: var(--green); border: 1px solid var(--green); border-radius: 999px; padding: 2px 8px; }
+  .post-preview { color: var(--muted); font-size: .86rem; margin-top: 8px; white-space: pre-wrap; max-height: 66px; overflow: hidden; cursor: pointer; }
+  .post-preview.open { max-height: none; color: var(--text); }
+  .post-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .inline-form { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+
+  .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--panel2); border: 1px solid var(--accent); color: var(--text); padding: 11px 20px; border-radius: 10px; font-size: .9rem; max-width: 92vw; z-index: 50; box-shadow: 0 8px 30px rgba(0,0,0,.5); }
+  .toast.err { border-color: var(--red); }
+  .hidden { display: none !important; }
+  .empty { color: var(--muted); font-size: .9rem; padding: 8px 0; }
+  .hint { color: var(--muted); font-size: .8rem; margin-top: 8px; line-height: 1.5; }
+  .golden-note { color: var(--muted); font-size: .82rem; margin-bottom: 12px; }
+  .golden-note b { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🌊 <span>Biển Đông Crypto</span> — Quản lý đăng bài</h1>
+    <span id="badge-page" class="badge">Đang kiểm tra…</span>
+    <span id="badge-token" class="badge">Token: …</span>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="tab-sched">📅 Lịch đăng</div>
+    <div class="tab" data-tab="tab-bank">📝 Kho bài viết</div>
+    <div class="tab" data-tab="tab-token">🔑 Token</div>
+  </div>
+
+  <!-- ============ TAB: SCHEDULE ============ -->
+  <section id="tab-sched">
+    <div class="panel">
+      <h2>⚡ Xếp lịch tự động vào giờ vàng</h2>
+      <div class="golden-note">Giờ vàng: <b>07:00</b> · <b>12:00</b> · <b>21:00</b> (giờ VN). Bài lấy lần lượt từ kho, Facebook tự đăng đúng giờ — không cần bật máy.</div>
+      <div class="row">
+        <div><label>Số ngày</label><input type="number" id="bulk-days" value="7" min="1" max="75"></div>
+        <div><label>Bài mỗi ngày</label><select id="bulk-perday"><option value="1">1 bài (21:00)</option><option value="2">2 bài</option><option value="3">3 bài</option></select></div>
+        <div><button class="btn-gold" id="btn-bulk" onclick="bulkSchedule()">🚀 Xếp lịch ngay</button></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>🗓️ Bài đã lên lịch trên Facebook <button class="btn-ghost" style="float:right" onclick="loadScheduled()">↻ Làm mới</button></h2>
+      <div id="sched-list"><div class="empty">Đang tải…</div></div>
+    </div>
+  </section>
+
+  <!-- ============ TAB: CONTENT BANK ============ -->
+  <section id="tab-bank" class="hidden">
+    <div class="panel">
+      <h2>➕ Viết bài mới</h2>
+      <label>Chủ đề (ngắn gọn, không dấu)</label>
+      <input id="new-topic" placeholder="vd: bitcoin-etf">
+      <label>Nội dung bài viết</label>
+      <textarea id="new-message" placeholder="Nội dung đăng lên Facebook…"></textarea>
+      <div style="margin-top:10px"><button class="btn-cyan" onclick="createPost()">Lưu vào kho</button></div>
+    </div>
+    <div class="panel">
+      <h2>📚 Kho bài viết (<span id="bank-count">…</span>)</h2>
+      <div id="bank-list"><div class="empty">Đang tải…</div></div>
+    </div>
+  </section>
+
+  <!-- ============ TAB: TOKEN ============ -->
+  <section id="tab-token" class="hidden">
+    <div class="panel">
+      <h2>🔑 Cập nhật Access Token</h2>
+      <label>User Access Token (dán từ Graph API Explorer, nên là bản đã Extend 60 ngày)</label>
+      <textarea id="token-input" style="min-height:80px" placeholder="EAAT…"></textarea>
+      <label>Page ID (bỏ trống = Biển Đông Crypto)</label>
+      <input id="token-pageid" placeholder="1141619055709724">
+      <div style="margin-top:10px"><button class="btn-gold" onclick="saveToken()">Đổi lấy Page Token &amp; lưu</button></div>
+      <div class="hint">
+        Token chỉ được lưu vào file <b>.env</b> trên máy này, không gửi đi đâu khác.<br>
+        Cách tạo: Graph API Explorer → chọn app → quyền <b>pages_manage_posts</b> + <b>pages_read_engagement</b> → Generate Token → dán vào <b>Access Token Debugger</b> → bấm <b>Extend Access Token</b> → copy chuỗi MỚI → dán vào đây.
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let toastTimer;
+function toast(msg, isErr = false) {
+  const el = $("toast");
+  el.textContent = msg;
+  el.className = "toast" + (isErr ? " err" : "");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.add("hidden"), 5000);
+}
+async function api(path, opts = {}) {
+  const res = await fetch(path, {
+    headers: { "Content-Type": "application/json" },
+    ...opts,
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  const data = await res.json();
+  if (!res.ok || data.error) throw new Error(data.error || res.statusText);
+  return data;
+}
+function fmtTime(unixOrMs) {
+  const d = new Date(unixOrMs > 1e12 ? unixOrMs : unixOrMs * 1000);
+  return d.toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit", year: "numeric" });
+}
+function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+// ---- tabs ----
+document.querySelectorAll(".tab").forEach((t) =>
+  t.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach((x) => x.classList.remove("active"));
+    t.classList.add("active");
+    ["tab-sched", "tab-bank", "tab-token"].forEach((id) => $(id).classList.toggle("hidden", id !== t.dataset.tab));
+  })
+);
+
+// ---- status ----
+async function loadStatus() {
+  try {
+    const s = await api("/api/status");
+    if (s.page) {
+      $("badge-page").textContent = `📄 ${s.page.name}${s.page.fan_count != null ? " · " + s.page.fan_count + " follow" : ""}`;
+      $("badge-page").className = "badge ok";
+    } else {
+      $("badge-page").textContent = "📄 Không đọc được page";
+      $("badge-page").className = "badge bad";
+      if (s.tokenError) toast(s.tokenError, true);
+    }
+    const bt = $("badge-token");
+    if (s.tokenError) { bt.textContent = "Token: LỖI / hết hạn"; bt.className = "badge bad"; }
+    else if (s.tokenExpiresAt === 0) { bt.textContent = "Token: vĩnh viễn ✓"; bt.className = "badge ok"; }
+    else if (s.tokenExpiresAt) {
+      const days = Math.round((s.tokenExpiresAt * 1000 - Date.now()) / 864e5);
+      bt.textContent = `Token: còn ~${days} ngày`;
+      bt.className = "badge " + (days > 3 ? "ok" : "bad");
+    } else { bt.textContent = "Token: không rõ hạn"; bt.className = "badge"; }
+  } catch (e) {
+    $("badge-page").textContent = "Server lỗi: " + e.message;
+    $("badge-page").className = "badge bad";
+  }
+}
+
+// ---- scheduled list ----
+async function loadScheduled() {
+  const box = $("sched-list");
+  box.innerHTML = '<div class="empty">Đang tải…</div>';
+  try {
+    const { posts } = await api("/api/scheduled");
+    if (!posts.length) { box.innerHTML = '<div class="empty">Chưa có bài nào được lên lịch.</div>'; return; }
+    posts.sort((a, b) => a.scheduled_publish_time - b.scheduled_publish_time);
+    box.innerHTML = posts.map((p) => `
+      <div class="sched-item">
+        <div class="sched-time">⏰ ${fmtTime(p.scheduled_publish_time)}</div>
+        <div class="sched-preview">${esc((p.message || "").split("\n")[0])}</div>
+        <button class="btn-red" onclick="cancelScheduled('${p.id}')">Hủy</button>
+      </div>`).join("");
+  } catch (e) {
+    box.innerHTML = `<div class="empty">Không tải được: ${esc(e.message)}</div>`;
+  }
+}
+async function cancelScheduled(id) {
+  if (!confirm("Hủy bài đã lên lịch này?")) return;
+  try { await api("/api/scheduled/" + id, { method: "DELETE" }); toast("Đã hủy lịch đăng."); loadScheduled(); }
+  catch (e) { toast(e.message, true); }
+}
+async function bulkSchedule() {
+  const btn = $("btn-bulk"); btn.disabled = true;
+  try {
+    const { results } = await api("/api/schedule-bulk", { method: "POST", body: { days: +$("bulk-days").value, perDay: +$("bulk-perday").value } });
+    const ok = results.filter((r) => r.ok).length;
+    const fail = results.length - ok;
+    toast(`Đã lên lịch ${ok}/${results.length} bài${fail ? ` — ${fail} bài lỗi: ${results.find((r) => !r.ok).error}` : " 🎉"}`, fail > 0);
+    loadScheduled(); loadBank();
+  } catch (e) { toast(e.message, true); }
+  btn.disabled = false;
+}
+
+// ---- content bank ----
+async function loadBank() {
+  try {
+    const { posts, usedIds } = await api("/api/posts");
+    $("bank-count").textContent = posts.length + " bài";
+    $("bank-list").innerHTML = posts.map((p) => `
+      <div class="post-card" id="card-${p.id}">
+        <div class="post-head">
+          <span class="topic">${esc(p.topic)}</span>
+          <span class="pid">#${p.id}</span>
+          ${usedIds.includes(p.id) ? '<span class="used-tag">đã dùng</span>' : ""}
+        </div>
+        <div class="post-preview" onclick="this.classList.toggle('open')">${esc(p.message)}</div>
+        <div class="post-actions">
+          <button class="btn-cyan" onclick="postNow(${p.id})">Đăng ngay</button>
+          <button class="btn-gold" onclick="toggleSchedForm(${p.id})">Lên lịch…</button>
+          <button class="btn-ghost" onclick="toggleEditForm(${p.id})">Sửa</button>
+          <button class="btn-red" onclick="removePost(${p.id})">Xóa</button>
+        </div>
+        <div class="inline-form hidden" id="sched-form-${p.id}">
+          <div class="row">
+            <div><label>Thời gian đăng (tối thiểu 15 phút nữa)</label><input type="datetime-local" id="sched-time-${p.id}"></div>
+            <div><button class="btn-gold" onclick="scheduleOne(${p.id})">Xác nhận lịch</button></div>
+          </div>
+        </div>
+        <div class="inline-form hidden" id="edit-form-${p.id}">
+          <label>Chủ đề</label><input id="edit-topic-${p.id}" value="${esc(p.topic)}">
+          <label>Nội dung</label><textarea id="edit-msg-${p.id}">${esc(p.message)}</textarea>
+          <div style="margin-top:8px"><button class="btn-cyan" onclick="saveEdit(${p.id})">Lưu thay đổi</button></div>
+        </div>
+      </div>`).join("");
+  } catch (e) { $("bank-list").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+function toggleSchedForm(id) {
+  const f = $("sched-form-" + id); f.classList.toggle("hidden");
+  if (!f.classList.contains("hidden")) {
+    const d = new Date(Date.now() + 30 * 60000);
+    d.setSeconds(0, 0);
+    $("sched-time-" + id).value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  }
+}
+function toggleEditForm(id) { $("edit-form-" + id).classList.toggle("hidden"); }
+async function postNow(id) {
+  if (!confirm("Đăng bài #" + id + " lên Facebook NGAY BÂY GIỜ?")) return;
+  try { const r = await api("/api/post-now", { method: "POST", body: { postId: id } }); toast("Đã đăng! " + r.link); loadBank(); }
+  catch (e) { toast(e.message, true); }
+}
+async function scheduleOne(id) {
+  const val = $("sched-time-" + id).value;
+  if (!val) return toast("Chọn thời gian trước đã.", true);
+  try {
+    await api("/api/schedule-one", { method: "POST", body: { postId: id, unixTime: Math.floor(new Date(val).getTime() / 1000) } });
+    toast("Đã lên lịch bài #" + id + " lúc " + fmtTime(new Date(val).getTime()));
+    toggleSchedForm(id); loadScheduled(); loadBank();
+  } catch (e) { toast(e.message, true); }
+}
+async function saveEdit(id) {
+  try {
+    await api("/api/posts/" + id, { method: "PUT", body: { topic: $("edit-topic-" + id).value, message: $("edit-msg-" + id).value } });
+    toast("Đã lưu bài #" + id); loadBank();
+  } catch (e) { toast(e.message, true); }
+}
+async function removePost(id) {
+  if (!confirm("Xóa bài #" + id + " khỏi kho? (Không ảnh hưởng bài đã đăng/đã lên lịch)")) return;
+  try { await api("/api/posts/" + id, { method: "DELETE" }); toast("Đã xóa."); loadBank(); }
+  catch (e) { toast(e.message, true); }
+}
+async function createPost() {
+  const message = $("new-message").value.trim();
+  if (!message) return toast("Nội dung không được để trống.", true);
+  try {
+    await api("/api/posts", { method: "POST", body: { topic: $("new-topic").value.trim() || "general", message } });
+    $("new-message").value = ""; $("new-topic").value = "";
+    toast("Đã thêm bài mới vào kho."); loadBank();
+  } catch (e) { toast(e.message, true); }
+}
+
+// ---- token ----
+async function saveToken() {
+  const userToken = $("token-input").value.trim();
+  if (!userToken) return toast("Dán token vào trước đã.", true);
+  try {
+    const r = await api("/api/token", { method: "POST", body: { userToken, pageId: $("token-pageid").value.trim() } });
+    const exp = r.expiresAt === 0 ? "vĩnh viễn" : r.expiresAt ? fmtTime(r.expiresAt) : "không rõ";
+    toast(`Đã lưu Page Token cho "${r.pageName}" — hạn: ${exp}`);
+    $("token-input").value = "";
+    loadStatus(); loadScheduled();
+  } catch (e) { toast(e.message, true); }
+}
+
+loadStatus(); loadScheduled(); loadBank();
+</script>
+</body>
+</html>
